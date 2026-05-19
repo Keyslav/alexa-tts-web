@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alexa TTS</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo-dot"></span>
+      <h1>Alexa TTS</h1>
+    </div>
+    <div class="status" id="status">
+      <span class="status-dot" data-state="unknown"></span>
+      <span class="status-text">verificando…</span>
+      <button class="icon-btn" id="refreshStatus" title="Recarregar status">↻</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card composer">
+      <label for="text">Mensagem</label>
+      <textarea id="text" rows="4" placeholder="Escreva o que a Alexa deve falar…"></textarea>
+
+      <div class="composer-row">
+        <select id="device" aria-label="Dispositivo">
+          <option value="">— Dispositivo padrão —</option>
+        </select>
+        <button class="btn primary" id="sendBtn">Enviar</button>
+        <button class="btn ghost" id="saveBtn">Salvar</button>
+      </div>
+      <div class="speed-row">
+        <div class="speed-header">
+          <span class="speed-label">Velocidade</span>
+          <span class="speed-value"><span id="rateValue">100</span>%</span>
+          <button type="button" class="link-btn" id="rateReset" title="Voltar pro normal">reset</button>
+        </div>
+        <input type="range" id="rate" min="20" max="150" step="5" value="100" />
+        <div class="speed-marks">
+          <span>lento</span>
+          <span>normal</span>
+          <span>rápido</span>
+        </div>
+      </div>
+      <div class="composer-status" id="composerStatus"></div>
+    </section>
+
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-tab="history" role="tab">Recentes</button>
+      <button class="tab" data-tab="saved" role="tab">Salvos</button>
+      <button class="tab" data-tab="devices" role="tab">Dispositivos</button>
+    </nav>
+
+    <section class="card panel" id="panel-history">
+      <ul class="list" id="historyList">
+        <li class="empty">Nada por aqui ainda.</li>
+      </ul>
+    </section>
+
+    <section class="card panel hidden" id="panel-saved">
+      <ul class="list" id="savedList">
+        <li class="empty">Nenhum texto salvo.</li>
+      </ul>
+    </section>
+
+    <section class="card panel hidden" id="panel-devices">
+      <ul class="list" id="devicesList">
+        <li class="empty">Carregando dispositivos…</li>
+      </ul>
+    </section>
+  </main>
+
+  <div class="modal hidden" id="saveModal" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <h2 id="saveModalTitle">Salvar mensagem</h2>
+      <label for="saveLabel">Nome</label>
+      <input id="saveLabel" type="text" placeholder="Ex: Boa noite, hora do almoço…" />
+      <label for="saveText">Texto</label>
+      <textarea id="saveText" rows="3"></textarea>
+      <div class="modal-actions">
+        <button class="btn ghost" id="saveCancel">Cancelar</button>
+        <button class="btn primary" id="saveConfirm">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

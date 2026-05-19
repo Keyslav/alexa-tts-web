@@ -1,0 +1,15 @@
+[Unit]
+Description=Alexa TTS Web
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=keyslav
+WorkingDirectory=/home/keyslav/alexa-tts-web
+ExecStart=/home/keyslav/alexa-tts-web/run.sh
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
