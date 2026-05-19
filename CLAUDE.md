@@ -11,7 +11,8 @@ Flask web UI that sends TTS messages to Amazon Echo devices on an `amazon.com.br
 ```bash
 ./setup.sh                 # one-time: deps, venv, download alexa-remote-control.sh, patch for Brasil
 ./login.sh                 # obtain refresh token via alexa-cookie-cli (needs browser at localhost:8090)
-./run.sh                   # serve via gunicorn on 0.0.0.0:5000 (override with PORT=/HOST=)
+./run.sh                   # serve via gunicorn on 0.0.0.0:5000
+./run.sh -p 8080 -H 127.0.0.1   # override via flags (also accepts $PORT / $HOST env vars)
 ./venv/bin/python app.py   # Flask dev server (no gunicorn, debug=False)
 ```
 

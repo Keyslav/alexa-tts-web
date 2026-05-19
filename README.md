@@ -27,8 +27,10 @@ chmod +x setup.sh login.sh run.sh
 ./login.sh
 
 # 4. Subir o servidor
-./run.sh
-# Acesse http://<ip-do-pi>:5000
+./run.sh                    # porta padrão 5000
+./run.sh -p 8080            # porta customizada
+./run.sh --port 8080 --host 127.0.0.1
+# Acesse http://<ip-do-pi>:<porta>
 ```
 
 ## Como funciona a autenticação
@@ -108,7 +110,7 @@ alexa-tts-web/
 - **Sem dispositivos na lista** → rode `REFRESH_TOKEN=$(cat .refresh-token) ./alexa-remote-control.sh -a` no terminal e veja o erro real.
 - **Alexa fala em inglês** → confirme idioma do dispositivo no app Alexa (não dá pra forçar via script).
 - **Erro 502 ao enviar** → teste no terminal: `REFRESH_TOKEN=$(cat .refresh-token) ./alexa-remote-control.sh -e 'speak:teste de áudio'`
-- **Porta 5000 ocupada** → `PORT=8080 ./run.sh`
+- **Porta 5000 ocupada** → `./run.sh -p 8080` (ou `PORT=8080 ./run.sh`)
 - **`speak:` lê o texto rápido demais ou erra acento** → tente envolver com SSML: `<speak><prosody rate="slow">olá pessoal</prosody></speak>`
 
 ## Segurança
