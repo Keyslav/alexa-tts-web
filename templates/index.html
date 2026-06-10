@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,78 +7,329 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
 </head>
 <body>
+
+  <!-- ===== TOPBAR ===== -->
   <header class="topbar">
     <div class="brand">
-      <span class="logo-dot"></span>
-      <h1>Alexa TTS</h1>
+      <div class="alexa-ring" aria-hidden="true"></div>
+      <span class="brand-name">Alexa TTS</span>
     </div>
-    <div class="status" id="status">
-      <span class="status-dot" data-state="unknown"></span>
-      <span class="status-text">verificando…</span>
-      <button class="icon-btn" id="refreshStatus" title="Recarregar status">↻</button>
+    <div class="topbar-right">
+      <div class="status-badge" id="statusBadge" title="Status da conexão Amazon">
+        <span class="status-dot" data-state="unknown"></span>
+        <span class="status-text" id="statusText">verificando…</span>
+      </div>
+      <button class="icon-btn" id="refreshBtn" title="Atualizar status e dispositivos" aria-label="Atualizar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M23 4v6h-6M1 20v-6h6"/>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+        </svg>
+      </button>
+      <button class="icon-btn" id="settingsBtn" title="Configurações" aria-label="Configurações">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      </button>
     </div>
   </header>
 
-  <main class="container">
-    <section class="card composer">
-      <label for="text">Mensagem</label>
-      <textarea id="text" rows="4" placeholder="Escreva o que a Alexa deve falar…"></textarea>
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="container" id="mainContent">
 
-      <div class="composer-row">
-        <select id="device" aria-label="Dispositivo">
-          <option value="">— Dispositivo padrão —</option>
-        </select>
-        <button class="btn primary" id="sendBtn">Enviar</button>
-        <button class="btn ghost" id="saveBtn">Salvar</button>
+    <!-- Banner de login (visível quando não autenticado) -->
+    <div class="login-banner hidden" id="loginBanner">
+      <div class="login-banner-body">
+        <div class="login-banner-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <div class="login-banner-text">
+          <strong>Conta Amazon não conectada</strong>
+          <span>Faça login para enviar mensagens aos dispositivos Echo</span>
+        </div>
+        <button class="btn primary" id="loginBannerBtn">Fazer Login</button>
       </div>
-      <div class="speed-row">
+    </div>
+
+    <!-- Card de composição -->
+    <section class="card compose-card">
+      <div class="compose-header">
+        <h2 class="section-title">Nova Mensagem</h2>
+      </div>
+      <div class="field">
+        <label for="text">Mensagem</label>
+        <textarea id="text" rows="3" placeholder="Escreva o que a Alexa deve falar…"
+                  aria-label="Texto da mensagem"></textarea>
+      </div>
+      <div class="compose-row">
+        <div class="field flex-field">
+          <label for="device">Dispositivo</label>
+          <select id="device" aria-label="Dispositivo alvo">
+            <option value="">— Dispositivo padrão —</option>
+          </select>
+        </div>
+        <div class="compose-actions">
+          <button class="btn ghost" id="saveBtn" title="Salvar mensagem">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+              <polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+            </svg>
+            Salvar
+          </button>
+          <button class="btn primary" id="sendBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="22" y1="2" x2="11" y2="13"/>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+            Enviar
+          </button>
+        </div>
+      </div>
+      <div class="speed-control">
         <div class="speed-header">
-          <span class="speed-label">Velocidade</span>
-          <span class="speed-value"><span id="rateValue">100</span>%</span>
-          <button type="button" class="link-btn" id="rateReset" title="Voltar pro normal">reset</button>
+          <span class="speed-label">Velocidade de fala</span>
+          <div class="speed-right">
+            <span class="speed-value"><span id="rateValue">100</span>%</span>
+            <button type="button" class="chip hidden" id="rateReset">reset</button>
+          </div>
         </div>
-        <input type="range" id="rate" min="20" max="150" step="5" value="100" />
+        <input type="range" id="rate" min="20" max="150" step="5" value="100"
+               aria-label="Velocidade de fala" />
         <div class="speed-marks">
-          <span>lento</span>
-          <span>normal</span>
-          <span>rápido</span>
+          <span>Lento</span><span>Normal</span><span>Rápido</span>
         </div>
       </div>
-      <div class="composer-status" id="composerStatus"></div>
+      <div class="composer-feedback" id="composerStatus" role="status" aria-live="polite"></div>
     </section>
 
-    <nav class="tabs" role="tablist">
-      <button class="tab active" data-tab="history" role="tab">Recentes</button>
-      <button class="tab" data-tab="saved" role="tab">Salvos</button>
-      <button class="tab" data-tab="devices" role="tab">Dispositivos</button>
+    <!-- Tabs de conteúdo -->
+    <nav class="tabs" role="tablist" aria-label="Seções">
+      <button class="tab active" data-tab="history" role="tab" aria-selected="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+        </svg>
+        Recentes
+      </button>
+      <button class="tab" data-tab="saved" role="tab" aria-selected="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+        Salvos
+      </button>
+      <button class="tab" data-tab="devices" role="tab" aria-selected="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+        </svg>
+        Dispositivos
+      </button>
     </nav>
 
-    <section class="card panel" id="panel-history">
-      <ul class="list" id="historyList">
-        <li class="empty">Nada por aqui ainda.</li>
+    <section class="card panel" id="panel-history" role="tabpanel">
+      <ul class="list" id="historyList" aria-label="Histórico de mensagens">
+        <li class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+          <span>Nenhuma mensagem enviada ainda</span>
+        </li>
       </ul>
     </section>
 
-    <section class="card panel hidden" id="panel-saved">
-      <ul class="list" id="savedList">
-        <li class="empty">Nenhum texto salvo.</li>
+    <section class="card panel hidden" id="panel-saved" role="tabpanel">
+      <ul class="list" id="savedList" aria-label="Mensagens salvas">
+        <li class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+          <span>Nenhuma mensagem salva</span>
+        </li>
       </ul>
     </section>
 
-    <section class="card panel hidden" id="panel-devices">
-      <ul class="list" id="devicesList">
-        <li class="empty">Carregando dispositivos…</li>
+    <section class="card panel hidden" id="panel-devices" role="tabpanel">
+      <ul class="list" id="devicesList" aria-label="Dispositivos disponíveis">
+        <li class="empty-state">
+          <span>Carregando dispositivos…</span>
+        </li>
       </ul>
     </section>
+
   </main>
 
-  <div class="modal hidden" id="saveModal" role="dialog" aria-modal="true">
+  <!-- ===== MODAL: LOGIN ===== -->
+  <div class="modal-backdrop hidden" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="loginModalTitle">
+    <div class="modal-card login-modal-card">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <div class="alexa-ring alexa-ring-lg" aria-hidden="true"></div>
+          <h2 id="loginModalTitle">Login Amazon</h2>
+        </div>
+        <button class="icon-btn close-btn" id="loginClose" aria-label="Fechar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Passo 1: Gerar URL -->
+      <div class="login-step" id="loginStep1">
+        <p class="step-intro">Conecte sua conta Amazon em três passos:</p>
+        <ol class="step-list">
+          <li>
+            <div class="step-num">1</div>
+            <div>Clique em <strong>Gerar URL</strong> para criar seu link de autenticação</div>
+          </li>
+          <li>
+            <div class="step-num">2</div>
+            <div>Abra o link no navegador e faça login com sua conta Amazon</div>
+          </li>
+          <li>
+            <div class="step-num">3</div>
+            <div>Após o login, copie o URL completo da barra de endereços e cole no próximo passo</div>
+          </li>
+        </ol>
+        <button class="btn primary full-width" id="generateUrlBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+          </svg>
+          Gerar URL de Login
+        </button>
+      </div>
+
+      <!-- Passo 2: Colar URL de retorno -->
+      <div class="login-step hidden" id="loginStep2">
+        <div class="url-box">
+          <div class="url-box-header">
+            <span class="url-box-label">URL de Login Amazon</span>
+            <button class="chip" id="copyUrlBtn">Copiar</button>
+          </div>
+          <div class="url-display" id="loginUrlDisplay" aria-label="URL de autenticação"></div>
+        </div>
+        <p class="step-hint">
+          Abra o link acima, faça login, e quando a Amazon redirecionar para uma página em branco
+          (amazon.com/ap/maplanding), copie o <strong>URL completo</strong> da barra de endereços.
+        </p>
+        <div class="field">
+          <label for="redirectUrl">URL após o login</label>
+          <textarea id="redirectUrl" rows="3"
+                    placeholder="https://www.amazon.com/ap/maplanding?openid.oa2.authorization_code=…"></textarea>
+        </div>
+        <div class="modal-actions">
+          <button class="btn ghost" id="loginBack">← Voltar</button>
+          <button class="btn primary" id="loginConfirm">Confirmar Login</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL: CONFIGURAÇÕES ===== -->
+  <div class="modal-backdrop hidden" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsModalTitle">
+    <div class="modal-card settings-modal-card">
+      <div class="modal-header">
+        <h2 id="settingsModalTitle">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+          Configurações
+        </h2>
+        <button class="icon-btn close-btn" id="settingsClose" aria-label="Fechar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="settings-sections">
+        <div class="settings-section">
+          <h3 class="settings-section-title">Padrões de envio</h3>
+          <div class="field">
+            <label for="settingDevice">Dispositivo padrão</label>
+            <select id="settingDevice">
+              <option value="">Nenhum (usa padrão da conta)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="settingRate">
+              Velocidade padrão
+              <span class="label-badge"><span id="settingRateValue">100</span>%</span>
+            </label>
+            <input type="range" id="settingRate" min="20" max="150" step="5" value="100"
+                   aria-label="Velocidade padrão de fala" />
+            <div class="speed-marks">
+              <span>Lento</span><span>Normal</span><span>Rápido</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3 class="settings-section-title">Histórico</h3>
+          <div class="field">
+            <label for="settingHistoryLimit">Máximo de mensagens no histórico</label>
+            <select id="settingHistoryLimit">
+              <option value="10">10 mensagens</option>
+              <option value="20" selected>20 mensagens</option>
+              <option value="50">50 mensagens</option>
+              <option value="100">100 mensagens</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3 class="settings-section-title">Aparência</h3>
+          <div class="field">
+            <label>Tema</label>
+            <div class="theme-picker" role="group" aria-label="Selecionar tema">
+              <button class="theme-opt active" data-theme-val="dark">🌙 Escuro</button>
+              <button class="theme-opt" data-theme-val="light">☀️ Claro</button>
+              <button class="theme-opt" data-theme-val="auto">💻 Sistema</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section danger-zone">
+          <h3 class="settings-section-title">Conta Amazon</h3>
+          <p class="settings-hint">Refaça o login se o status mostrar "Token expirado".</p>
+          <button class="btn ghost danger-btn" id="reloginBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            Refazer Login
+          </button>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn ghost" id="settingsCancel">Cancelar</button>
+        <button class="btn primary" id="settingsSave">Salvar configurações</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL: SALVAR MENSAGEM ===== -->
+  <div class="modal-backdrop hidden" id="saveModal" role="dialog" aria-modal="true" aria-labelledby="saveModalTitle">
     <div class="modal-card">
-      <h2 id="saveModalTitle">Salvar mensagem</h2>
-      <label for="saveLabel">Nome</label>
-      <input id="saveLabel" type="text" placeholder="Ex: Boa noite, hora do almoço…" />
-      <label for="saveText">Texto</label>
-      <textarea id="saveText" rows="3"></textarea>
+      <div class="modal-header">
+        <h2 id="saveModalTitle">Salvar mensagem</h2>
+        <button class="icon-btn close-btn" id="saveClose" aria-label="Fechar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="field">
+        <label for="saveLabel">Nome</label>
+        <input id="saveLabel" type="text" placeholder="Ex: Boa noite, hora do almoço…" />
+      </div>
+      <div class="field">
+        <label for="saveText">Texto</label>
+        <textarea id="saveText" rows="3"></textarea>
+      </div>
       <div class="modal-actions">
         <button class="btn ghost" id="saveCancel">Cancelar</button>
         <button class="btn primary" id="saveConfirm">Salvar</button>
@@ -86,7 +337,8 @@
     </div>
   </div>
 
-  <div class="toast" id="toast"></div>
+  <!-- Toast de notificações -->
+  <div class="toast" id="toast" role="alert" aria-live="assertive"></div>
 
   <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>

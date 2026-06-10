@@ -22,6 +22,10 @@ def init_db():
                 text TEXT NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
+            CREATE TABLE IF NOT EXISTS settings (
+                key TEXT PRIMARY KEY,
+                value TEXT NOT NULL
+            );
             CREATE INDEX IF NOT EXISTS idx_history_sent_at ON history(sent_at DESC);
         """)
         cols = {r["name"] for r in conn.execute("PRAGMA table_info(history)")}
@@ -93,3 +97,25 @@ def get_saved():
             "SELECT id, label, text, created_at FROM saved ORDER BY label COLLATE NOCASE"
         ).fetchall()
     return [dict(r) for r in rows]
+
+
+# --- Settings repository ---
+
+def get_setting(key: str) -> str | None:
+    with connect() as conn:
+        row = conn.execute("SELECT value FROM settings WHERE key = ?", (key,)).fetchone()
+    return row["value"] if row else None
+
+
+def set_setting(key: str, value: str) -> None:
+    with connect() as conn:
+        conn.execute(
+            "INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)",
+            (key, value),
+        )
+
+
+def get_all_settings() -> dict:
+    with connect() as conn:
+        rows = conn.execute("SELECT key, value FROM settings").fetchall()
+    return {r["key"]: r["value"] for r in rows}
